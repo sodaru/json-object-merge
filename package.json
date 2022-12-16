@@ -1,0 +1,54 @@
+{
+  "name": "json-object-merge",
+  "version": "0.0.0",
+  "description": "Merge JSON Object using rules",
+  "keywords": [
+    "json-merge",
+    "json-extend",
+    "json-merger",
+    "combine-json",
+    "sodaru"
+  ],
+  "main": "dist/cjs/index.js",
+  "module": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "clean": "npx rimraf dist",
+    "prettier": "npx prettier --check --ignore-unknown ./**/*",
+    "eslint": "npx eslint ./ --no-error-on-unmatched-pattern",
+    "tsc": "npx tsc",
+    "tsc-cjs": "npx tsc --project tsconfig.cjs.json",
+    "build": "npm run prettier && npm run eslint && npm run clean && npm run tsc && npm run tsc-cjs",
+    "pretest": "npm run build",
+    "test": "echo 'Not Tests Yet'",
+    "postversion": "git push --follow-tags"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@https://github.com/sodaru/json-object-merge.git"
+  },
+  "author": "Raghavendra K R<raghavendra@sodaru.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://https://github.com/sodaru/json-object-merge/issues"
+  },
+  "homepage": "https://https://github.com/sodaru/json-object-merge#readme",
+  "devDependencies": {
+    "prettier-config-sodaru": "^1.0.0",
+    "eslint-config-sodaru": "^1.0.1",
+    "tslib": "^2.4.1",
+    "typescript": "^4.9.4"
+  },
+  "peerDependencies": {
+    "tslib": "^2.4.1"
+  },
+  "eslintConfig": {
+    "extends": [
+      "eslint-config-sodaru"
+    ]
+  },
+  "prettier": "prettier-config-sodaru"
+}
