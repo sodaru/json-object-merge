@@ -185,12 +185,12 @@ expect(merged).toEqual({
 
 ## Contribution
 
-Fork the repo and send the Pull Requests to develop branch
+Fork the repo and send the Pull Requests to `develop` branch
 
-develop is merged to the main branch periodically to make a release
+`develop` is merged to the main `branch` periodically to make a **release**
 
 ## Support
 
-This project is a part of the Open Source Initiative from Sodaru Technologies
+This project is a part of the Open Source Initiative from [Sodaru Technologies](https://sodaru.com).
 
 Write an email to opensource@sodaru.com for queries on this project
