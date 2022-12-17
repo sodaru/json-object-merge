@@ -35,7 +35,7 @@ The default operation on `Array` and `Object` can be altered by specifying rules
 
 ## Rules Definition
 
-The `rules` parameter is a JSON path to the Operation map
+The `rules` parameter is a [JSON Path](https://www.npmjs.com/package/jsonpath) to the Operation map
 
 For the sample JSON data mentioned at https://www.npmjs.com/package/jsonpath
 

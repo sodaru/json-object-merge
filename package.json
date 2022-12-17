@@ -23,7 +23,7 @@
     "tsc-cjs": "npx tsc --project tsconfig.cjs.json",
     "build": "npm run prettier && npm run eslint && npm run clean && npm run tsc && npm run tsc-cjs",
     "pretest": "npm run build",
-    "test": "echo 'Not Tests Yet'",
+    "test": "npx jest",
     "postversion": "git push --follow-tags"
   },
   "repository": {
@@ -37,8 +37,13 @@
   },
   "homepage": "https://https://github.com/sodaru/json-object-merge#readme",
   "devDependencies": {
-    "prettier-config-sodaru": "^1.0.0",
+    "@types/jest": "^28.0.0",
+    "@types/jsonpath": "^0.2.0",
+    "@types/lodash": "^4.14.191",
     "eslint-config-sodaru": "^1.0.1",
+    "jest": "^28.0.0",
+    "prettier-config-sodaru": "^1.0.0",
+    "ts-jest": "^28.0.0",
     "tslib": "^2.4.1",
     "typescript": "^4.9.4"
   },
@@ -50,5 +55,9 @@
       "eslint-config-sodaru"
     ]
   },
-  "prettier": "prettier-config-sodaru"
+  "prettier": "prettier-config-sodaru",
+  "dependencies": {
+    "jsonpath": "^1.1.1",
+    "lodash": "^4.17.21"
+  }
 }
