@@ -33,14 +33,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@https://github.com/sodaru/json-object-merge.git"
+    "url": "https://github.com/sodaru/json-object-merge.git"
   },
   "author": "Raghavendra K R<raghavendra@sodaru.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://https://github.com/sodaru/json-object-merge/issues"
+    "url": "https://github.com/sodaru/json-object-merge/issues"
   },
-  "homepage": "https://https://github.com/sodaru/json-object-merge#readme",
+  "homepage": "https://github.com/sodaru/json-object-merge#readme",
   "devDependencies": {
     "@types/jest": "^28.0.0",
     "@types/jsonpath": "^0.2.0",
