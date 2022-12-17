@@ -1,6 +1,6 @@
 {
   "name": "json-object-merge",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Merge JSON Object using rules",
   "keywords": [
     "json merge",
