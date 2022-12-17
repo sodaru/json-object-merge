@@ -3,11 +3,16 @@
   "version": "0.0.1",
   "description": "Merge JSON Object using rules",
   "keywords": [
-    "json-merge",
-    "json-extend",
-    "json-merger",
-    "combine-json",
-    "sodaru"
+    "json merge",
+    "json extend",
+    "json merger",
+    "combine json",
+    "sodaru",
+    "merge with rules",
+    "combine",
+    "replace",
+    "append",
+    "prepend"
   ],
   "main": "dist/cjs/index.js",
   "module": "dist/index.js",
