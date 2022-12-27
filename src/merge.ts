@@ -4,11 +4,21 @@ import { cloneDeep, isArray, isPlainObject } from "lodash";
 
 export type Operation = "REPLACE" | "COMBINE" | "APPEND" | "PREPEND";
 
+export type PathSegment = string | number;
+
+export type Path = PathSegment[];
+
+export type MergedWithReport = {
+  merged: unknown;
+  report: { sourcePaths: Path[] };
+};
+
 export const JSONObjectMerge = (
   target: unknown,
   source: unknown,
-  rules: Record<string, Operation> = {}
-): unknown => {
+  rules: Record<string, Operation> = {},
+  report = false
+): unknown | MergedWithReport => {
   const pathToOperationMap: Record<string, Operation> = {};
   for (const jsonPathExpression in rules) {
     const _paths = jp.paths(target, jsonPathExpression);
@@ -22,8 +32,9 @@ export const JSONObjectMerge = (
 
   const result = { data: cloneDeep(target) };
   const sourceObj = { data: cloneDeep(source) };
+  const sourcePaths: Path[] = [];
 
-  const pathQueue: (string | number)[][] = [["$", "data"]];
+  const pathQueue: Path[] = [["$", "data"]];
 
   while (pathQueue.length > 0) {
     const currentPath = pathQueue.shift();
@@ -44,9 +55,19 @@ export const JSONObjectMerge = (
           replace = true;
           break;
         case "APPEND":
+          if (report) {
+            for (let i = 0; i < currentValueFromSource.length; i++) {
+              sourcePaths.push([...currentPath, currentValue.length + i]);
+            }
+          }
           currentValue.push(...currentValueFromSource);
           break;
         case "PREPEND":
+          if (report) {
+            for (let i = 0; i < currentValueFromSource.length; i++) {
+              sourcePaths.push([...currentPath, i]);
+            }
+          }
           currentValue.unshift(...currentValueFromSource);
           break;
         default:
@@ -59,6 +80,9 @@ export const JSONObjectMerge = (
             i++
           ) {
             currentValue.push(currentValueFromSource[i]);
+            if (report) {
+              sourcePaths.push([...currentPath, i]);
+            }
           }
       }
     } else if (isPlainObject(currentValue)) {
@@ -77,6 +101,9 @@ export const JSONObjectMerge = (
           for (const property in currentValueFromSource) {
             if (currentValue[property] === undefined) {
               currentValue[property] = currentValueFromSource[property];
+              if (report) {
+                sourcePaths.push([...currentPath, property]);
+              }
             }
           }
       }
@@ -85,7 +112,22 @@ export const JSONObjectMerge = (
     }
     if (replace && currentValueFromSource !== undefined) {
       jp.value(result, currentPathStr, currentValueFromSource);
+      if (report) {
+        sourcePaths.push([...currentPath]);
+      }
     }
+  }
+
+  if (report) {
+    return {
+      merged: result.data,
+      report: {
+        sourcePaths: sourcePaths.map(sourcePath => [
+          "$",
+          ...sourcePath.slice(2)
+        ])
+      }
+    };
   }
 
   return result.data;
