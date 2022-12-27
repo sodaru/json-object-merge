@@ -15,26 +15,28 @@ export const JSONObjectMerge = (
     for (const pathComponents of _paths) {
       pathComponents.shift();
       pathComponents.unshift("$", "data");
-      pathToOperationMap[pathComponents.join(".")] = rules[jsonPathExpression];
+      pathToOperationMap[jp.stringify(pathComponents)] =
+        rules[jsonPathExpression];
     }
   }
 
   const result = { data: cloneDeep(target) };
   const sourceObj = { data: cloneDeep(source) };
 
-  const pathQueue: string[] = ["$.data"];
+  const pathQueue: (string | number)[][] = [["$", "data"]];
 
   while (pathQueue.length > 0) {
     const currentPath = pathQueue.shift();
+    const currentPathStr = jp.stringify(currentPath);
 
-    const currentValue = jp.value(result, currentPath);
-    const currentValueFromSource = jp.value(sourceObj, currentPath);
+    const currentValue = jp.value(result, currentPathStr);
+    const currentValueFromSource = jp.value(sourceObj, currentPathStr);
 
     let replace = false;
 
     if (isArray(currentValue)) {
       const operation = isArray(currentValueFromSource)
-        ? pathToOperationMap[currentPath] || "COMBINE"
+        ? pathToOperationMap[currentPathStr] || "COMBINE"
         : "REPLACE";
 
       switch (operation) {
@@ -49,7 +51,7 @@ export const JSONObjectMerge = (
           break;
         default:
           for (let i = 0; i < currentValue.length; i++) {
-            pathQueue.push(`${currentPath}.${i}`);
+            pathQueue.push([...currentPath, i]);
           }
           for (
             let i = currentValue.length;
@@ -61,7 +63,7 @@ export const JSONObjectMerge = (
       }
     } else if (isPlainObject(currentValue)) {
       const operation = isPlainObject(currentValueFromSource)
-        ? pathToOperationMap[currentPath] || "COMBINE"
+        ? pathToOperationMap[currentPathStr] || "COMBINE"
         : "REPLACE";
 
       switch (operation) {
@@ -70,7 +72,7 @@ export const JSONObjectMerge = (
           break;
         default:
           for (const property in currentValue) {
-            pathQueue.push(`${currentPath}.${property}`);
+            pathQueue.push([...currentPath, property]);
           }
           for (const property in currentValueFromSource) {
             if (currentValue[property] === undefined) {
@@ -82,7 +84,7 @@ export const JSONObjectMerge = (
       replace = true;
     }
     if (replace && currentValueFromSource !== undefined) {
-      jp.value(result, currentPath, currentValueFromSource);
+      jp.value(result, currentPathStr, currentValueFromSource);
     }
   }
 

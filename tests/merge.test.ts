@@ -396,6 +396,106 @@ describe("Test the merge for mixed object: ", () => {
         }
       },
       { "$.store.book": "PREPEND" }
+    ],
+    [
+      "with special characters in custom rules",
+      {
+        store: {
+          book: [
+            {
+              "SODARU::category": "reference",
+              author: "Nigel Rees",
+              title: "Sayings of the Century",
+              price: 8.95
+            }
+          ],
+          bicycle: {
+            color: "red",
+            price: 19.95
+          }
+        }
+      },
+      {
+        store: {
+          book: [
+            {
+              "SODARU::category": "fiction",
+              author: "Evelyn Waugh",
+              title: "Sword of Honour",
+              isbn: "0-679-43136-5",
+              price: 12.99
+            }
+          ]
+        }
+      },
+      {
+        store: {
+          book: [
+            {
+              "SODARU::category": "fiction",
+              author: "Evelyn Waugh",
+              title: "Sword of Honour",
+              isbn: "0-679-43136-5",
+              price: 12.99
+            }
+          ],
+          bicycle: {
+            color: "red",
+            price: 19.95
+          }
+        }
+      },
+      { "$..[?(@['SODARU::category'])]": "REPLACE" }
+    ],
+    [
+      "with special characters in property names",
+      {
+        "my-store": {
+          book: [
+            {
+              "SODARU::category": "reference",
+              author: "Nigel Rees",
+              title: "Sayings of the Century",
+              price: 8.95
+            }
+          ],
+          "bi.cycle": {
+            color: "red",
+            "total price": 19.95
+          }
+        }
+      },
+      {
+        "my-store": {
+          book: [
+            {
+              "SODARU::category": "fiction",
+              author: "Evelyn Waugh",
+              title: "Sword of Honour",
+              "'isbn'": "0-679-43136-5",
+              price: 12.99
+            }
+          ]
+        }
+      },
+      {
+        "my-store": {
+          book: [
+            {
+              "SODARU::category": "fiction",
+              author: "Evelyn Waugh",
+              title: "Sword of Honour",
+              "'isbn'": "0-679-43136-5",
+              price: 12.99
+            }
+          ],
+          "bi.cycle": {
+            color: "red",
+            "total price": 19.95
+          }
+        }
+      },
+      undefined
     ]
   ];
   test.each(testData)("%s", testFunc);
