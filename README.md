@@ -14,6 +14,9 @@ const JSONObjectMerge = require("json-object-merge");
 
 // source is merged into target using rules and new object is returned
 const merged = JSONObjectMerge(target, source, rules);
+
+// when 4th parameter is true, returns the report containing the sourcePaths in the merged object
+const mergedWithReport = JSONObjectMerge(target, source, rules, true);
 ```
 
 `JSONObjectMerge` merges the source object recursively into the target object in the following manner.  
@@ -180,6 +183,42 @@ expect(merged).toEqual({
       price: 19.95
     }
   }
+});
+```
+
+3. Merge with report
+
+JSONObjectMerge returns the report containing paths in the merged object which are originally from the source
+
+```typescript
+const target = {
+  store: {
+    bicycle: {
+      color: "red"
+    }
+  }
+};
+
+const source = {
+  store: {
+    bicycle: {
+      price: 19.95
+    }
+  }
+};
+
+const mergedWithReport = JSONObjectMerge(target, source, undefined, true);
+
+expect(merged).toEqual({
+  merged: {
+    store: {
+      bicycle: {
+        color: "red",
+        price: 19.95
+      }
+    }
+  },
+  report: { sourcePaths: [["$", "store", "bicycle", "price"]] }
 });
 ```
 

@@ -1,12 +1,13 @@
 import { cloneDeep } from "lodash";
-import JSONObjectMerge, { Operation } from "../src";
+import JSONObjectMerge, { Operation, Path } from "../src";
 
 type TestDataEntry = [
-  string,
-  unknown,
-  unknown,
-  unknown,
-  Record<string, Operation> | undefined
+  string, // title
+  unknown, // target
+  unknown, // source
+  unknown, // merged
+  Path[], // report
+  Record<string, Operation> | undefined // rules
 ];
 
 const testFunc = (
@@ -14,6 +15,7 @@ const testFunc = (
   target: unknown,
   source: unknown,
   expected: unknown,
+  sourcePaths: Path[],
   rules?: Record<string, Operation>
 ) => {
   const originalTarget = cloneDeep(target);
@@ -21,55 +23,61 @@ const testFunc = (
   expect(JSONObjectMerge(target, source, rules)).toStrictEqual(expected);
   expect(target).toStrictEqual(originalTarget);
   expect(source).toStrictEqual(originalSource);
+
+  expect(JSONObjectMerge(target, source, rules, true)).toStrictEqual({
+    merged: expected,
+    report: { sourcePaths }
+  });
 };
 
 describe("Test the merge for primitive types: ", () => {
   const testData: TestDataEntry[] = [
-    ["string with string", "Hello", "World", "World", undefined],
-    ["string with number", "Hello", 1, 1, undefined],
-    ["string with boolean", "Hello", true, true, undefined],
-    ["string with null", "Hello", null, null, undefined],
-    ["string with array", "Hello", [1, 2, 3], [1, 2, 3], undefined],
+    ["string with string", "Hello", "World", "World", [["$"]], undefined],
+    ["string with number", "Hello", 1, 1, [["$"]], undefined],
+    ["string with boolean", "Hello", true, true, [["$"]], undefined],
+    ["string with null", "Hello", null, null, [["$"]], undefined],
+    ["string with array", "Hello", [1, 2, 3], [1, 2, 3], [["$"]], undefined],
     // prettier-ignore
-    ["string with object", "Hello", { name: "json-object-merge" }, { name: "json-object-merge" }, undefined],
+    ["string with object", "Hello", { name: "json-object-merge" }, { name: "json-object-merge" }, [["$"]],undefined],
 
-    ["number with string", 10.5, "World", "World", undefined],
-    ["number with number", 10.5, 1, 1, undefined],
-    ["number with boolean", 10.5, true, true, undefined],
-    ["number with null", 10.5, null, null, undefined],
-    ["number with array", 10.5, [1, 2, 3], [1, 2, 3], undefined],
+    ["number with string", 10.5, "World", "World", [["$"]], undefined],
+    ["number with number", 10.5, 1, 1, [["$"]], undefined],
+    ["number with boolean", 10.5, true, true, [["$"]], undefined],
+    ["number with null", 10.5, null, null, [["$"]], undefined],
+    ["number with array", 10.5, [1, 2, 3], [1, 2, 3], [["$"]], undefined],
     // prettier-ignore
-    ["string with object", 10.5, { name: "json-object-merge" }, { name: "json-object-merge" }, undefined],
+    ["string with object", 10.5, { name: "json-object-merge" }, { name: "json-object-merge" },[["$"]], undefined],
 
-    ["boolean with string", true, "World", "World", undefined],
-    ["boolean with number", false, 1, 1, undefined],
-    ["boolean with boolean", true, true, true, undefined],
-    ["boolean with null", false, null, null, undefined],
-    ["number with array", true, [1, 2, 3], [1, 2, 3], undefined],
+    ["boolean with string", true, "World", "World", [["$"]], undefined],
+    ["boolean with number", false, 1, 1, [["$"]], undefined],
+    ["boolean with boolean", true, true, true, [["$"]], undefined],
+    ["boolean with null", false, null, null, [["$"]], undefined],
+    ["number with array", true, [1, 2, 3], [1, 2, 3], [["$"]], undefined],
     // prettier-ignore
-    ["string with object", false, { name: "json-object-merge" }, { name: "json-object-merge" }, undefined],
+    ["string with object", false, { name: "json-object-merge" }, { name: "json-object-merge" }, [["$"]],undefined],
 
-    ["null with string", null, "World", "World", undefined],
-    ["null with number", null, 1, 1, undefined],
-    ["null with boolean", null, true, true, undefined],
-    ["null with null", null, null, null, undefined],
-    ["number with array", null, [1, 2, 3], [1, 2, 3], undefined],
+    ["null with string", null, "World", "World", [["$"]], undefined],
+    ["null with number", null, 1, 1, [["$"]], undefined],
+    ["null with boolean", null, true, true, [["$"]], undefined],
+    ["null with null", null, null, null, [["$"]], undefined],
+    ["number with array", null, [1, 2, 3], [1, 2, 3], [["$"]], undefined],
     // prettier-ignore
-    ["string with object", null, { name: "json-object-merge" }, { name: "json-object-merge" }, undefined]
+    ["string with object", null, { name: "json-object-merge" }, { name: "json-object-merge" }, [["$"]],undefined]
   ];
   test.each(testData)("%s", testFunc);
 });
 
 describe("Test the merge for object type: ", () => {
   const testData: TestDataEntry[] = [
-    ["with primitive", {}, "World", "World", undefined],
-    ["with array", {}, ["World"], ["World"], undefined],
+    ["with primitive", {}, "World", "World", [["$"]], undefined],
+    ["with array", {}, ["World"], ["World"], [["$"]], undefined],
 
     [
       "with object",
       { name: "Hello" },
       { name: "World" },
       { name: "World" },
+      [["$", "name"]],
       undefined
     ],
 
@@ -78,6 +86,10 @@ describe("Test the merge for object type: ", () => {
       { name: "hello", version: 1 },
       { name: "HELLO", title: "WORLD" },
       { name: "HELLO", version: 1, title: "WORLD" },
+      [
+        ["$", "title"],
+        ["$", "name"]
+      ],
       undefined
     ],
 
@@ -86,6 +98,7 @@ describe("Test the merge for object type: ", () => {
       { name: "hello", version: 1 },
       { name: "HELLO", title: "WORLD" },
       { name: "HELLO", title: "WORLD" },
+      [["$"]],
       { $: "REPLACE" }
     ],
 
@@ -94,6 +107,10 @@ describe("Test the merge for object type: ", () => {
       { name: "hello", version: 1 },
       { name: "HELLO", title: "WORLD" },
       { name: "HELLO", version: 1, title: "WORLD" }, // COMBINE is applied for unsupported operations
+      [
+        ["$", "title"],
+        ["$", "name"]
+      ],
       { $: "APPEND" }
     ],
 
@@ -161,6 +178,10 @@ describe("Test the merge for object type: ", () => {
           price: 19.95
         }
       },
+      [
+        ["$", "bicycle", "price"],
+        ["$", "store", "books"]
+      ],
       { "$..books": "REPLACE" }
     ]
   ];
@@ -169,16 +190,27 @@ describe("Test the merge for object type: ", () => {
 
 describe("Test the merge for array type: ", () => {
   const testData: TestDataEntry[] = [
-    ["with primitive", [], 1000, 1000, undefined],
-    ["with object", [], { name: "Hello" }, { name: "Hello" }, undefined],
+    ["with primitive", [], 1000, 1000, [["$"]], undefined],
+    [
+      "with object",
+      [],
+      { name: "Hello" },
+      { name: "Hello" },
+      [["$"]],
+      undefined
+    ],
 
-    ["with array", ["Hello"], ["World"], ["World"], undefined],
+    ["with array", ["Hello"], ["World"], ["World"], [["$", 0]], undefined],
 
     [
       "with array having extra properties",
       ["Hello"],
       ["HELLO", "World"],
       ["HELLO", "World"],
+      [
+        ["$", 1],
+        ["$", 0]
+      ],
       undefined
     ],
 
@@ -187,6 +219,10 @@ describe("Test the merge for array type: ", () => {
       [{ name: "Hello", version: 1 }],
       [{ name: "HELLO" }, "World"],
       [{ name: "HELLO", version: 1 }, "World"],
+      [
+        ["$", 1],
+        ["$", 0, "name"]
+      ],
       undefined
     ],
 
@@ -195,6 +231,7 @@ describe("Test the merge for array type: ", () => {
       [{ name: "Hello", version: 1 }],
       [{ name: "HELLO" }, "World"],
       [{ name: "HELLO" }, "World"],
+      [["$"]],
       { $: "REPLACE" }
     ],
 
@@ -268,6 +305,10 @@ describe("Test the merge for array type: ", () => {
           }
         }
       ],
+      [
+        ["$", 0, "bicycle", "price"],
+        ["$", 0, "store", "books"]
+      ],
       { "$..books": "REPLACE" }
     ]
   ];
@@ -338,6 +379,11 @@ describe("Test the merge for mixed object: ", () => {
           }
         }
       },
+      [
+        ["$", "store", "book", 1],
+        ["$", "store", "book", 0, "isbn"],
+        ["$", "store", "book", 0, "price"]
+      ],
       undefined
     ],
     [
@@ -395,7 +441,116 @@ describe("Test the merge for mixed object: ", () => {
           }
         }
       },
+      [["$", "store", "book", 0]],
       { "$.store.book": "PREPEND" }
+    ],
+    [
+      "with special characters in custom rules",
+      {
+        store: {
+          book: [
+            {
+              "SODARU::category": "reference",
+              author: "Nigel Rees",
+              title: "Sayings of the Century",
+              price: 8.95
+            }
+          ],
+          bicycle: {
+            color: "red",
+            price: 19.95
+          }
+        }
+      },
+      {
+        store: {
+          book: [
+            {
+              "SODARU::category": "fiction",
+              author: "Evelyn Waugh",
+              title: "Sword of Honour",
+              isbn: "0-679-43136-5",
+              price: 12.99
+            }
+          ]
+        }
+      },
+      {
+        store: {
+          book: [
+            {
+              "SODARU::category": "fiction",
+              author: "Evelyn Waugh",
+              title: "Sword of Honour",
+              isbn: "0-679-43136-5",
+              price: 12.99
+            }
+          ],
+          bicycle: {
+            color: "red",
+            price: 19.95
+          }
+        }
+      },
+      [["$", "store", "book", 0]],
+      { "$..[?(@['SODARU::category'])]": "REPLACE" }
+    ],
+    [
+      "with special characters in property names",
+      {
+        "my-store": {
+          book: [
+            {
+              "SODARU::category": "reference",
+              author: "Nigel Rees",
+              title: "Sayings of the Century",
+              price: 8.95
+            }
+          ],
+          "bi.cycle": {
+            color: "red",
+            "total price": 19.95
+          }
+        }
+      },
+      {
+        "my-store": {
+          book: [
+            {
+              "SODARU::category": "fiction",
+              author: "Evelyn Waugh",
+              title: "Sword of Honour",
+              "'isbn'": "0-679-43136-5",
+              price: 12.99
+            }
+          ]
+        }
+      },
+      {
+        "my-store": {
+          book: [
+            {
+              "SODARU::category": "fiction",
+              author: "Evelyn Waugh",
+              title: "Sword of Honour",
+              "'isbn'": "0-679-43136-5",
+              price: 12.99
+            }
+          ],
+          "bi.cycle": {
+            color: "red",
+            "total price": 19.95
+          }
+        }
+      },
+      [
+        ["$", "my-store", "book", 0, "'isbn'"],
+        ["$", "my-store", "book", 0, "SODARU::category"],
+        ["$", "my-store", "book", 0, "author"],
+        ["$", "my-store", "book", 0, "title"],
+        ["$", "my-store", "book", 0, "price"]
+      ],
+      undefined
     ]
   ];
   test.each(testData)("%s", testFunc);
