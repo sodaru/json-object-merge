@@ -1,12 +1,16 @@
 import { cloneDeep } from "lodash";
-import JSONObjectMerge, { Operation, Path } from "../src";
+import JSONObjectMerge, {
+  Operation,
+  MergeReport,
+  MergedWithReport
+} from "../src";
 
 type TestDataEntry = [
   string, // title
   unknown, // target
   unknown, // source
   unknown, // merged
-  Path[], // report
+  MergeReport[], // report
   Record<string, Operation> | undefined // rules
 ];
 
@@ -15,7 +19,7 @@ const testFunc = (
   target: unknown,
   source: unknown,
   expected: unknown,
-  sourcePaths: Path[],
+  updatedPaths: MergeReport[],
   rules?: Record<string, Operation>
 ) => {
   const originalTarget = cloneDeep(target);
@@ -26,58 +30,212 @@ const testFunc = (
 
   expect(JSONObjectMerge(target, source, rules, true)).toStrictEqual({
     merged: expected,
-    report: { sourcePaths }
-  });
+    report: { updatedPaths }
+  } as MergedWithReport);
 };
 
 describe("Test the merge for primitive types: ", () => {
   const testData: TestDataEntry[] = [
-    ["string with string", "Hello", "World", "World", [["$"]], undefined],
-    ["string with number", "Hello", 1, 1, [["$"]], undefined],
-    ["string with boolean", "Hello", true, true, [["$"]], undefined],
-    ["string with null", "Hello", null, null, [["$"]], undefined],
-    ["string with array", "Hello", [1, 2, 3], [1, 2, 3], [["$"]], undefined],
+    [
+      "string with string",
+      "Hello",
+      "World",
+      "World",
+      [{ path: ["$"], operation: "REPLACE" }],
+      undefined
+    ],
+    [
+      "string with number",
+      "Hello",
+      1,
+      1,
+      [{ path: ["$"], operation: "REPLACE" }],
+      undefined
+    ],
+    [
+      "string with boolean",
+      "Hello",
+      true,
+      true,
+      [{ path: ["$"], operation: "REPLACE" }],
+      undefined
+    ],
+    [
+      "string with null",
+      "Hello",
+      null,
+      null,
+      [{ path: ["$"], operation: "REPLACE" }],
+      undefined
+    ],
+    [
+      "string with array",
+      "Hello",
+      [1, 2, 3],
+      [1, 2, 3],
+      [{ path: ["$"], operation: "REPLACE" }],
+      undefined
+    ],
     // prettier-ignore
-    ["string with object", "Hello", { name: "json-object-merge" }, { name: "json-object-merge" }, [["$"]],undefined],
+    ["string with object", "Hello", { name: "json-object-merge" }, { name: "json-object-merge" }, [{path: ["$"], operation: "REPLACE"}],undefined],
 
-    ["number with string", 10.5, "World", "World", [["$"]], undefined],
-    ["number with number", 10.5, 1, 1, [["$"]], undefined],
-    ["number with boolean", 10.5, true, true, [["$"]], undefined],
-    ["number with null", 10.5, null, null, [["$"]], undefined],
-    ["number with array", 10.5, [1, 2, 3], [1, 2, 3], [["$"]], undefined],
+    [
+      "number with string",
+      10.5,
+      "World",
+      "World",
+      [{ path: ["$"], operation: "REPLACE" }],
+      undefined
+    ],
+    [
+      "number with number",
+      10.5,
+      1,
+      1,
+      [{ path: ["$"], operation: "REPLACE" }],
+      undefined
+    ],
+    [
+      "number with boolean",
+      10.5,
+      true,
+      true,
+      [{ path: ["$"], operation: "REPLACE" }],
+      undefined
+    ],
+    [
+      "number with null",
+      10.5,
+      null,
+      null,
+      [{ path: ["$"], operation: "REPLACE" }],
+      undefined
+    ],
+    [
+      "number with array",
+      10.5,
+      [1, 2, 3],
+      [1, 2, 3],
+      [{ path: ["$"], operation: "REPLACE" }],
+      undefined
+    ],
     // prettier-ignore
-    ["string with object", 10.5, { name: "json-object-merge" }, { name: "json-object-merge" },[["$"]], undefined],
+    ["string with object", 10.5, { name: "json-object-merge" }, { name: "json-object-merge" },[{path: ["$"], operation: "REPLACE"}], undefined],
 
-    ["boolean with string", true, "World", "World", [["$"]], undefined],
-    ["boolean with number", false, 1, 1, [["$"]], undefined],
-    ["boolean with boolean", true, true, true, [["$"]], undefined],
-    ["boolean with null", false, null, null, [["$"]], undefined],
-    ["number with array", true, [1, 2, 3], [1, 2, 3], [["$"]], undefined],
+    [
+      "boolean with string",
+      true,
+      "World",
+      "World",
+      [{ path: ["$"], operation: "REPLACE" }],
+      undefined
+    ],
+    [
+      "boolean with number",
+      false,
+      1,
+      1,
+      [{ path: ["$"], operation: "REPLACE" }],
+      undefined
+    ],
+    [
+      "boolean with boolean",
+      true,
+      true,
+      true,
+      [{ path: ["$"], operation: "REPLACE" }],
+      undefined
+    ],
+    [
+      "boolean with null",
+      false,
+      null,
+      null,
+      [{ path: ["$"], operation: "REPLACE" }],
+      undefined
+    ],
+    [
+      "number with array",
+      true,
+      [1, 2, 3],
+      [1, 2, 3],
+      [{ path: ["$"], operation: "REPLACE" }],
+      undefined
+    ],
     // prettier-ignore
-    ["string with object", false, { name: "json-object-merge" }, { name: "json-object-merge" }, [["$"]],undefined],
+    ["string with object", false, { name: "json-object-merge" }, { name: "json-object-merge" }, [{path: ["$"], operation: "REPLACE"}],undefined],
 
-    ["null with string", null, "World", "World", [["$"]], undefined],
-    ["null with number", null, 1, 1, [["$"]], undefined],
-    ["null with boolean", null, true, true, [["$"]], undefined],
-    ["null with null", null, null, null, [["$"]], undefined],
-    ["number with array", null, [1, 2, 3], [1, 2, 3], [["$"]], undefined],
+    [
+      "null with string",
+      null,
+      "World",
+      "World",
+      [{ path: ["$"], operation: "REPLACE" }],
+      undefined
+    ],
+    [
+      "null with number",
+      null,
+      1,
+      1,
+      [{ path: ["$"], operation: "REPLACE" }],
+      undefined
+    ],
+    [
+      "null with boolean",
+      null,
+      true,
+      true,
+      [{ path: ["$"], operation: "REPLACE" }],
+      undefined
+    ],
+    [
+      "null with null",
+      null,
+      null,
+      null,
+      [{ path: ["$"], operation: "REPLACE" }],
+      undefined
+    ],
+    [
+      "number with array",
+      null,
+      [1, 2, 3],
+      [1, 2, 3],
+      [{ path: ["$"], operation: "REPLACE" }],
+      undefined
+    ],
     // prettier-ignore
-    ["string with object", null, { name: "json-object-merge" }, { name: "json-object-merge" }, [["$"]],undefined]
+    ["string with object", null, { name: "json-object-merge" }, { name: "json-object-merge" }, [{path: ["$"], operation: "REPLACE"}],undefined]
   ];
   test.each(testData)("%s", testFunc);
 });
 
 describe("Test the merge for object type: ", () => {
   const testData: TestDataEntry[] = [
-    ["with primitive", {}, "World", "World", [["$"]], undefined],
-    ["with array", {}, ["World"], ["World"], [["$"]], undefined],
+    [
+      "with primitive",
+      {},
+      "World",
+      "World",
+      [{ path: ["$"], operation: "REPLACE" }],
+      undefined
+    ],
+    [
+      "with array",
+      {},
+      ["World"],
+      ["World"],
+      [{ path: ["$"], operation: "REPLACE" }],
+      undefined
+    ],
 
     [
       "with object",
       { name: "Hello" },
       { name: "World" },
       { name: "World" },
-      [["$", "name"]],
+      [{ path: ["$", "name"], operation: "REPLACE" }],
       undefined
     ],
 
@@ -87,8 +245,8 @@ describe("Test the merge for object type: ", () => {
       { name: "HELLO", title: "WORLD" },
       { name: "HELLO", version: 1, title: "WORLD" },
       [
-        ["$", "title"],
-        ["$", "name"]
+        { path: ["$", "title"], operation: "COMBINE" },
+        { path: ["$", "name"], operation: "REPLACE" }
       ],
       undefined
     ],
@@ -98,7 +256,7 @@ describe("Test the merge for object type: ", () => {
       { name: "hello", version: 1 },
       { name: "HELLO", title: "WORLD" },
       { name: "HELLO", title: "WORLD" },
-      [["$"]],
+      [{ path: ["$"], operation: "REPLACE" }],
       { $: "REPLACE" }
     ],
 
@@ -108,8 +266,8 @@ describe("Test the merge for object type: ", () => {
       { name: "HELLO", title: "WORLD" },
       { name: "HELLO", version: 1, title: "WORLD" }, // COMBINE is applied for unsupported operations
       [
-        ["$", "title"],
-        ["$", "name"]
+        { path: ["$", "title"], operation: "COMBINE" },
+        { path: ["$", "name"], operation: "REPLACE" }
       ],
       { $: "APPEND" }
     ],
@@ -179,8 +337,8 @@ describe("Test the merge for object type: ", () => {
         }
       },
       [
-        ["$", "bicycle", "price"],
-        ["$", "store", "books"]
+        { path: ["$", "bicycle", "price"], operation: "COMBINE" },
+        { path: ["$", "store", "books"], operation: "REPLACE" }
       ],
       { "$..books": "REPLACE" }
     ]
@@ -190,17 +348,31 @@ describe("Test the merge for object type: ", () => {
 
 describe("Test the merge for array type: ", () => {
   const testData: TestDataEntry[] = [
-    ["with primitive", [], 1000, 1000, [["$"]], undefined],
+    [
+      "with primitive",
+      [],
+      1000,
+      1000,
+      [{ path: ["$"], operation: "REPLACE" }],
+      undefined
+    ],
     [
       "with object",
       [],
       { name: "Hello" },
       { name: "Hello" },
-      [["$"]],
+      [{ path: ["$"], operation: "REPLACE" }],
       undefined
     ],
 
-    ["with array", ["Hello"], ["World"], ["World"], [["$", 0]], undefined],
+    [
+      "with array",
+      ["Hello"],
+      ["World"],
+      ["World"],
+      [{ path: ["$", 0], operation: "REPLACE" }],
+      undefined
+    ],
 
     [
       "with array having extra properties",
@@ -208,8 +380,8 @@ describe("Test the merge for array type: ", () => {
       ["HELLO", "World"],
       ["HELLO", "World"],
       [
-        ["$", 1],
-        ["$", 0]
+        { path: ["$", 1], operation: "COMBINE" },
+        { path: ["$", 0], operation: "REPLACE" }
       ],
       undefined
     ],
@@ -220,8 +392,8 @@ describe("Test the merge for array type: ", () => {
       [{ name: "HELLO" }, "World"],
       [{ name: "HELLO", version: 1 }, "World"],
       [
-        ["$", 1],
-        ["$", 0, "name"]
+        { path: ["$", 1], operation: "COMBINE" },
+        { path: ["$", 0, "name"], operation: "REPLACE" }
       ],
       undefined
     ],
@@ -231,7 +403,7 @@ describe("Test the merge for array type: ", () => {
       [{ name: "Hello", version: 1 }],
       [{ name: "HELLO" }, "World"],
       [{ name: "HELLO" }, "World"],
-      [["$"]],
+      [{ path: ["$"], operation: "REPLACE" }],
       { $: "REPLACE" }
     ],
 
@@ -306,8 +478,8 @@ describe("Test the merge for array type: ", () => {
         }
       ],
       [
-        ["$", 0, "bicycle", "price"],
-        ["$", 0, "store", "books"]
+        { path: ["$", 0, "bicycle", "price"], operation: "COMBINE" },
+        { path: ["$", 0, "store", "books"], operation: "REPLACE" }
       ],
       { "$..books": "REPLACE" }
     ]
@@ -321,7 +493,7 @@ describe("Test the merge for mixed object: ", () => {
       "without custom rules",
       {
         store: {
-          book: [
+          books: [
             {
               category: "reference",
               author: "Nigel Rees",
@@ -337,7 +509,7 @@ describe("Test the merge for mixed object: ", () => {
       },
       {
         store: {
-          book: [
+          books: [
             {
               isbn: "0-044-40080-2",
               price: 9.05
@@ -355,7 +527,7 @@ describe("Test the merge for mixed object: ", () => {
       {
         store: {
           // object is merged recursively
-          book: [
+          books: [
             {
               // item at index 0 is merged
               category: "reference",
@@ -380,9 +552,9 @@ describe("Test the merge for mixed object: ", () => {
         }
       },
       [
-        ["$", "store", "book", 1],
-        ["$", "store", "book", 0, "isbn"],
-        ["$", "store", "book", 0, "price"]
+        { path: ["$", "store", "books", 1], operation: "COMBINE" },
+        { path: ["$", "store", "books", 0, "isbn"], operation: "COMBINE" },
+        { path: ["$", "store", "books", 0, "price"], operation: "REPLACE" }
       ],
       undefined
     ],
@@ -398,10 +570,12 @@ describe("Test the merge for mixed object: ", () => {
               price: 8.95
             }
           ],
-          bicycle: {
-            color: "red",
-            price: 19.95
-          }
+          bicycle: [
+            {
+              color: "red",
+              price: 19.95
+            }
+          ]
         }
       },
       {
@@ -413,6 +587,16 @@ describe("Test the merge for mixed object: ", () => {
               title: "Sword of Honour",
               isbn: "0-679-43136-5",
               price: 12.99
+            }
+          ],
+          bicycle: [
+            {
+              color: "green",
+              price: 20.55
+            },
+            {
+              color: "blue",
+              price: 18.4
             }
           ]
         }
@@ -435,14 +619,27 @@ describe("Test the merge for mixed object: ", () => {
               price: 8.95
             }
           ],
-          bicycle: {
-            color: "red",
-            price: 19.95
-          }
+          bicycle: [
+            {
+              color: "red",
+              price: 19.95
+            },
+            {
+              color: "green",
+              price: 20.55
+            },
+            {
+              color: "blue",
+              price: 18.4
+            }
+          ]
         }
       },
-      [["$", "store", "book", 0]],
-      { "$.store.book": "PREPEND" }
+      [
+        { path: ["$", "store", "book"], operation: "PREPEND", count: 1 },
+        { path: ["$", "store", "bicycle"], operation: "APPEND", count: 2 }
+      ],
+      { "$.store.book": "PREPEND", "$..bicycle": "APPEND" }
     ],
     [
       "with special characters in custom rules",
@@ -492,7 +689,7 @@ describe("Test the merge for mixed object: ", () => {
           }
         }
       },
-      [["$", "store", "book", 0]],
+      [{ path: ["$", "store", "book", 0], operation: "REPLACE" }],
       { "$..[?(@['SODARU::category'])]": "REPLACE" }
     ],
     [
@@ -544,11 +741,14 @@ describe("Test the merge for mixed object: ", () => {
         }
       },
       [
-        ["$", "my-store", "book", 0, "'isbn'"],
-        ["$", "my-store", "book", 0, "SODARU::category"],
-        ["$", "my-store", "book", 0, "author"],
-        ["$", "my-store", "book", 0, "title"],
-        ["$", "my-store", "book", 0, "price"]
+        { path: ["$", "my-store", "book", 0, "'isbn'"], operation: "COMBINE" },
+        {
+          path: ["$", "my-store", "book", 0, "SODARU::category"],
+          operation: "REPLACE"
+        },
+        { path: ["$", "my-store", "book", 0, "author"], operation: "REPLACE" },
+        { path: ["$", "my-store", "book", 0, "title"], operation: "REPLACE" },
+        { path: ["$", "my-store", "book", 0, "price"], operation: "REPLACE" }
       ],
       undefined
     ]
